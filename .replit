@@ -1,0 +1,6 @@
+run = "php -S 0.0.0.0:8080 -t ."
+modules = ["php-8.1"]
+
+[[ports]]
+localPort = 8080
+externalPort = 80

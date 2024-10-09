@@ -2,29 +2,32 @@
 session_start();
 if(isset($_SESSION['login_gmt']))
 {
-	$views = "";
+    $views = "";
+    include ("../actions/conexion.php");
+
+    // Consulta para contar el total de solicitudes de personal
+    $query_count = "SELECT COUNT(*) as total FROM reqpersonal";
+    $result_count = mysqli_query($con, $query_count);
+    $row_count = mysqli_fetch_assoc($result_count);
+    $total_solicitudes = $row_count['total'];
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
-        
-
         <meta charset="utf-8" />
-                <title>Inicio</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-                <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-                <meta content="" name="author" />
-                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Inicio</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
+        <meta content="" name="author" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-                <!-- App favicon -->
-                <link rel="shortcut icon" href="../assets/images/favicon.png">
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="../assets/images/favicon.png">
 
-       
-
-         <!-- App css -->
-         <link href="../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-         <link href="../assets/css/icons.min.css" rel="stylesheet" type="text/css" />
-         <link href="../assets/css/app.min.css" rel="stylesheet" type="text/css" />
+        <!-- App css -->
+        <link href="../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="../assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <link href="../assets/css/app.min.css" rel="stylesheet" type="text/css" />
 
     </head>
 
@@ -39,7 +42,6 @@ if(isset($_SESSION['login_gmt']))
             <!-- Navbar -->
             <nav class="navbar-custom" id="navbar-custom">    
                 <ul class="list-unstyled topbar-nav float-end mb-0">
-
                     <li class="dropdown">
                         <a class="nav-link dropdown-toggle nav-user" data-bs-toggle="dropdown" href="#" role="button"
                             aria-haspopup="false" aria-expanded="false">
@@ -59,13 +61,13 @@ if(isset($_SESSION['login_gmt']))
                         </div>
                     </li><!--end topbar-profile-->
                 </ul><!--end topbar-nav-->
-				<ul class="list-unstyled topbar-nav mb-0">                        
-					<li>
-						<button class="nav-link button-menu-mobile nav-icon" id="togglemenu">
-							<i class="ti ti-menu-2"></i>
-						</button>
-					</li>                      
-				</ul>
+                <ul class="list-unstyled topbar-nav mb-0">                        
+                    <li>
+                        <button class="nav-link button-menu-mobile nav-icon" id="togglemenu">
+                            <i class="ti ti-menu-2"></i>
+                        </button>
+                    </li>                      
+                </ul>
             </nav>
             <!-- end navbar-->
         </div>
@@ -76,17 +78,61 @@ if(isset($_SESSION['login_gmt']))
 
             <!-- Page Content-->
             <div class="page-content-tab">
-
-            </div><!-- container -->
-                 
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="page-title-box">
+                                <h4 class="page-title">Panel de Control</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row d-flex align-items-center">
+                                        <div class="col-8">
+                                            <h2 class="m-0"><?php echo $total_solicitudes; ?></h2>
+                                            <p class="mb-0 text-muted">Total Solicitudes de Personal</p>
+                                        </div>
+                                        <div class="col-4 text-end">
+                                            <i class="ti ti-file-description text-primary" style="font-size: 2.5em;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-9 col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="nombre" class="form-label">Buscar Personal</label>
+                                        <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ingrese Nombre" autocomplete="off">
+                                    </div>
+                                    <div id="resultados-nombre" class="mt-4"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                        <iframe width="500" height="450" src="https://lookerstudio.google.com/embed/reporting/d000869c-a253-4c46-a154-e1a6577bb967/page/u51DE" frameborder="0" style="border:0" allowfullscreen sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+                                        </div>
+                                    
+                                        </div>
+                                        </div>
+                                        </div>
+                    </div>
+                </div>
                 <!--Start Footer-->
                 <!-- Footer Start -->
                 <footer class="footer text-center text-sm-start">
                     <span class="text-muted d-none d-sm-inline-block float-end">
-					&copy; <script>
+                    &copy; <script>
                         document.write(new Date().getFullYear())
                     </script> Grupo Mctree
-					</span>
+                    </span>
                 </footer>
                 <!-- end Footer -->                
                 <!--end footer-->
@@ -106,7 +152,37 @@ if(isset($_SESSION['login_gmt']))
         <script src="../assets/js/pages/analytics-index.init.js"></script>
         <!-- App js -->
         <script src="../assets/js/app.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+        $(document).ready(function() {
+            var typingTimer;
+            var doneTypingInterval = 300; // Espera 300ms después de que el usuario deja de escribir
 
+            $('#nombre').on('input', function() {
+                clearTimeout(typingTimer);
+                if ($('#nombre').val()) {
+                    typingTimer = setTimeout(buscarPorNombre, doneTypingInterval);
+                } else {
+                    $('#resultados-nombre').html('');
+                }
+            });
+
+            function buscarPorNombre() {
+                var nombre = $('#nombre').val();
+                $.ajax({
+                    url: 'buscar_por_nombre.php',
+                    method: 'POST',
+                    data: { nombre: nombre },
+                    success: function(response) {
+                        $('#resultados-nombre').html(response);
+                    },
+                    error: function() {
+                        $('#resultados-nombre').html('<p>Error al buscar.</p>');
+                    }
+                });
+            }
+        });
+        </script>
     </body>
     <!--end body-->
 </html>

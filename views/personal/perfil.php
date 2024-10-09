@@ -192,6 +192,7 @@ if(isset($_SESSION['login_gmt']))
                                                     <p class="mb-0 met-user-name-post"><b> CURP </b>: <?php echo $usuarios['curp']; ?></p>
 													<button class="btn btn-primary btn-sm" onclick="window.modalcurp.showModal();">Validar CURP</button>
 
+																									
 													<dialog id="modalcurp">
 														<embed src="http://72.167.45.26<?php echo $usuarios['doc_curp']; ?>" width="100%" height="350px"/>
 														<br>
@@ -238,7 +239,7 @@ if(isset($_SESSION['login_gmt']))
 													<button class="btn btn-primary btn-sm" onclick="window.modalnss.showModal();">Validar NSS</button>
 
 													<dialog id="modalnss">
-														<embed src="http://72.167.45.26<?php echo $usuarios['doc_nss']; ?>" width="100%" height="350px"/>
+														<embed src="<?php echo $usuarios['doc_nss']; ?>" width="100%" height="350px"/>
 														<br>
 														<p class="mb-0 met-user-name-post"><?php echo $usuarios['nss']; ?></p>
 														<br>
@@ -277,7 +278,7 @@ if(isset($_SESSION['login_gmt']))
 													<br />
 													<br />
 													<!-- verificar_script.php?curp=<?php  echo $usuarios['curp']; ?> -->
-													<a href="verificar_script.php?curp=<?php  echo $usuarios['curp']; ?>" class="btn btn-success" >Validar</a>
+													<a href="verificar_script.php?curp=<?php  echo $usuarios['curp']; ?>" class="btn btn-success" >Aprobar</a>
                                                 </div>
                                             </div>                                                
                                         </div><!--end col-->
@@ -653,12 +654,12 @@ if(isset($_SESSION['login_gmt']))
 															$extensiondoc = explode(".", $porciones[4]);
 															if($extensiondoc[1] == "pdf"){
 															?>
-															<embed src="http://72.167.45.26<?php echo $usuarios['doc_nss']; ?>" type="application/pdf" width="100%" height="73%" />
+															<embed src="<?php echo $usuarios['doc_nss']; ?>" type="application/pdf" width="100%" height="73%" />
 														<?php
 															}else{
 														?>
-															  <a href="http://72.167.45.26<?php echo $usuarios['doc_nss']; ?>" class="lightbox" title="<?php echo $usuarios['nss']; ?>">
-																	<img src="http://72.167.45.26<?php echo $usuarios['doc_nss']; ?>" alt="<?php echo $usuarios['nss']."\n".$usuarios['regimen_fiscal']."\n".$usuarios['cp']; ?>" class="img-fluid" />
+															  <a href="documentos_app/mctree/test.jpeg" class="lightbox" title="<?php echo $usuarios['nss']; ?>">
+																	<img src="../../documentos_app/mctree/test.jpeg" alt="<?php echo $usuarios['nss']."\n".$usuarios['regimen_fiscal']."\n".$usuarios['cp']; ?>" class="img-fluid" />
 																</a> 
 														<?php } ?>
 														<br/><br/>

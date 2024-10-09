@@ -1,310 +1,278 @@
 <?php
-error_reporting(0);
 session_start();
-if(isset($_SESSION['login_gmt']))
-{
-	//aqui llenamos la variable para saber si esta en views o en una carpeta dentro de views
-	//Si esta en la raiz de view la variable esta vacia y si esta dentro de una carpeta de view la variable es ../
-	
-	$views = "../";
-	
-	include("$views../actions/conexion.php");
-	
-	$query_clientes = mysqli_query($con, "SELECT * FROM codigos_clientes WHERE codigo IN (".$_SESSION['clave_gmt'].");");
-	
-	//convierte las claves en lista para poder recorrerlas y hacer mach con los usuarios que contengan la clave ejecutivo
-	$porciones = explode(",", $_SESSION["clave_gmt"]);
-	$query_claves = "";
-	//Recorre las claves para poder llamar solo los usuarios que califiquen
-	for ($i=0; $i < count($porciones) ; $i++) {
-		if(count($porciones) == 0 || count($porciones) == null){
-		}else if(count($porciones) == 1){
-			$query_claves = " clave_ejecutivo like '%".$porciones[$i]."%' ";
-		}else{
-			if( ($i +1) == count($porciones))
-			{
-				$query_claves = $query_claves." clave_ejecutivo like '%".$porciones[$i]."%' ";
-			} else{
-				$query_claves = $query_claves." clave_ejecutivo like '%".$porciones[$i]."%' OR ";
-			}
-		}
-	}
-	
-	if($_GET['filtro']){
-		$condicion_claves = "";
-		$cndicion_fechas = "";
-		//validacion para ver si ponemos condicion de claves en query
-		if(!empty($_POST['codsel'])){
-			$claves_texto = implode(",", $_POST['codsel']);
-			$condicion_claves = " AND clave_ejecutivo IN (".$claves_texto.")";
-		}
-		
-		//validacion para ver si ponemos condicion de fechas en query
-		if(($_POST['date1'] != "" || $_POST['date1'] != null) AND ($_POST['date2'] != "" || $_POST['date2'] != null)){
-			$condicion_fechas = " AND fechaAlta BETWEEN '".$_POST['date1']."' AND DATE_ADD('".$_POST['date2']."', INTERVAL 1 DAY) ";
-		}
-		//var_dump("SELECT usuarios.* FROM usuarios WHERE autorizado IS NULL ".$condicion_fechas.$condicion_claves." ORDER BY fechaAlta DESC;");exit;
-		$query_usuarios = mysqli_query($con,"SELECT usuarios.* FROM usuarios WHERE autorizado IS NULL ".$condicion_fechas.$condicion_claves." ORDER BY fechaAlta DESC;");
-	}else{
-	$query_usuarios = mysqli_query($con,"SELECT usuarios.* FROM usuarios WHERE autorizado IS NULL AND (".$query_claves.") ORDER BY fechaAlta DESC;");
-	}
-	
-	//funcion de quitar acentos
-	function quitar_acentos($cadena){
-		$originales = 'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðòóôõöøùúûýýþÿ';
-		$modificadas = 'aaaaaaaceeeeiiiidoooooouuuuybsaaaaaaaceeeeiiiidoooooouuuyyby';
-		$cadena = utf8_decode($cadena);
-		$cadena = strtr($cadena, utf8_decode($originales), $modificadas);
-		return utf8_encode($cadena);
-	}
-?>
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-    <head>
-        
 
-        <meta charset="utf-8" />
-                <title>Candidatos</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-                <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-                <meta content="" name="author" />
-                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+if (isset($_SESSION['login_gmt'])) {
+    $views = "../";
+    include("$views../actions/conexion.php");
 
-                <!-- App favicon -->
-                <link rel="shortcut icon" href="<?php echo $views;?>../assets/images/favicon.png">
+    // Obtener y sanitizar las claves del usuario
+    $clave_gmt = $_SESSION['clave_gmt'] ?? '';
+    $clave_array = array_filter(array_map('trim', explode(',', $clave_gmt)));
 
-		<link href="<?php echo $views;?>../assets/libs/simple-datatables/style.css" rel="stylesheet" type="text/css" />
-		
-        <link href="<?php echo $views;?>../assets/libs/vanillajs-datepicker/css/datepicker.min.css" rel="stylesheet" type="text/css" />
-		
-		<link href="<?php echo $views;?>../assets/libs/mobius1-selectr/selectr.min.css" rel="stylesheet" type="text/css" />
-		
-         <!-- App css -->
-         <link href="<?php echo $views;?>../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-         <link href="<?php echo $views;?>../assets/css/icons.min.css" rel="stylesheet" type="text/css" />
-         <link href="<?php echo $views;?>../assets/css/app.min.css" rel="stylesheet" type="text/css" />
+    if (count($clave_array) > 0) {
+        // Crear placeholders para la consulta preparada
+        $placeholders = implode(',', array_fill(0, count($clave_array), '?'));
 
-    </head>
+        // Preparar la consulta
+        $sql = "SELECT * FROM codigos_clientes WHERE codigo IN ($placeholders)";
+        $stmt = $con->prepare($sql);
 
-    <body id="body">
-        <!-- leftbar-tab-menu -->
-        <?php include ("../../actions/leftbar.php");?>
-        <!-- end leftbar-tab-menu-->
+        // Vincular los parámetros
+        $types = str_repeat('s', count($clave_array));
+        $stmt->bind_param($types, ...$clave_array);
 
-        <!-- Top Bar Start -->
-        <!-- Top Bar Start -->
-        <div class="topbar">            
-            <!-- Navbar -->
-            <nav class="navbar-custom" id="navbar-custom">    
-                <ul class="list-unstyled topbar-nav float-end mb-0">
+        // Ejecutar la consulta
+        $stmt->execute();
+        $query_clientes = $stmt->get_result();
+    } else {
+        // Manejar el caso en que no hay claves disponibles
+        $query_clientes = [];
+    }
+    ?>
+    <!DOCTYPE html>
+    <html lang="es" dir="ltr">
+        <head>
+            <meta charset="utf-8" />
+            <title>Candidatos</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+            <!-- Favicon -->
+            <link rel="shortcut icon" href="<?php echo $views;?>../assets/images/favicon.png">
 
-                    <li class="dropdown">
-                        <a class="nav-link dropdown-toggle nav-user" data-bs-toggle="dropdown" href="#" role="button"
-                            aria-haspopup="false" aria-expanded="false">
-                            <div class="d-flex align-items-center">
-                                <img src="<?php echo $views;?>../assets/images/users/user-4.jpg" alt="profile-user" class="rounded-circle me-2 thumb-sm" />
-                                <div>
-                                    <small class="d-none d-md-block font-11"><?php echo $_SESSION['rol_gmt']; ?></small>
-                                    <span class="d-none d-md-block fw-semibold font-12"> <?php echo $_SESSION['nombre_gmt']; ?> <i
-                                            class="mdi mdi-chevron-down"></i></span>
+            <!-- Estilos CSS -->
+            <link href="<?php echo $views;?>../assets/libs/simple-datatables/style.css" rel="stylesheet" type="text/css" />
+            <link href="<?php echo $views;?>../assets/libs/vanillajs-datepicker/css/datepicker.min.css" rel="stylesheet" type="text/css" />
+            <link href="<?php echo $views;?>../assets/libs/mobius1-selectr/selectr.min.css" rel="stylesheet" type="text/css" />
+
+            <!-- App css -->
+            <link href="<?php echo $views;?>../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+            <link href="<?php echo $views;?>../assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+            <link href="<?php echo $views;?>../assets/css/app.min.css" rel="stylesheet" type="text/css" />
+
+            <style>
+                .skeleton-loader {
+                    animation: loading 1.5s infinite;
+                    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                    background-size: 200% 100%;
+                    border-radius: 4px;
+                }
+                .skeleton-row {
+                    height: 20px;
+                    margin-bottom: 10px;
+                }
+                @keyframes loading {
+                    0% {
+                        background-position: 200% 0;
+                    }
+                    100% {
+                        background-position: -200% 0;
+                    }
+                }
+            </style>
+        </head>
+
+        <body id="body">
+            <!-- Barra lateral -->
+            <?php include ("../../actions/leftbar.php");?>
+            <!-- Barra superior -->
+            <?php include ("../../actions/topbar.php");?>
+
+            <div class="page-wrapper">
+                <div class="page-content-tab">
+                    <div class="container-fluid">
+                        <!-- Contenido principal -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <!-- Encabezado de la tarjeta -->
+                                    <div class="card-header">
+                                        <h4 class="card-title">Candidatos</h4>
+                                    </div>
+                                    <!-- Filtros -->
+                                    <div class="row">
+                                        <div class="col-lg-8">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h4 class="card-title">Filtros</h4>
+                                                    <p class="text-muted mb-0">Busca entre rango de fechas</p>
+                                                </div>
+                                                <form id="filtro-form">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-md-7">
+                                                                <label class="mb-3">Selecciona un rango de fechas</label>
+                                                                <div class="input-group" id="DateRange">
+                                                                    <input type="date" class="form-control" name="date1" placeholder="Inicial" aria-label="FechaInicial">
+                                                                    <span class="input-group-text"> a </span>
+                                                                    <input type="date" class="form-control" name="date2" placeholder="Final" aria-label="FechaFinal">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="mb-3">Selecciona un cliente</label>
+                                                                <select class="input-group" id="multiSelect" name="codsel[]" multiple>
+                                                                <?php while ($filac = $query_clientes->fetch_assoc()) { ?>
+                                                                    <option value="<?php echo htmlspecialchars($filac['codigo']); ?>"><?php echo htmlspecialchars($filac['codigo']." - ".$filac['cliente']." - ".$filac['perfil']); ?></option>
+                                                                <?php } ?>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <br>
+                                                        <button class="btn btn-primary" type="submit">Filtrar</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-4">
+                                            <div class="card">
+                                                <div class="card-header">
+                                                    <h4 class="card-title">Búsqueda por CURP</h4>
+                                                    <p class="text-muted mb-0">Ingresa la CURP del candidato</p>
+                                                </div>
+                                                <form method="POST" action="buscarcurp.php">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-md-10">
+                                                                <label class="mb-3">CURP</label>
+                                                                <div class="col-sm-10">
+                                                                    <input class="form-control" type="text" name="bcurp" id="bcurp">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <br>
+                                                        <button class="btn btn-primary" type="submit">Buscar</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Contenedor de los candidatos -->
+                                    <div class="card-body">
+                                        <div id="candidatos-container">
+                                            <!-- Aquí se cargarán los datos de los candidatos -->
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a class="dropdown-item" href="#"><i class="ti ti-user font-16 me-1 align-text-bottom"></i> Perfil</a>
-                            <div class="dropdown-divider mb-0"></div>
-                            <a class="dropdown-item" href="<?php echo $views; ?>../actions/logout.php"><i class="ti ti-power font-16 me-1 align-text-bottom"></i> Cerrar sesión</a>
                         </div>
-                    </li><!--end topbar-profile-->
-                </ul><!--end topbar-nav-->
-				<ul class="list-unstyled topbar-nav mb-0">                        
-					<li>
-						<button class="nav-link button-menu-mobile nav-icon" id="togglemenu">
-							<i class="ti ti-menu-2"></i>
-						</button>
-					</li>                      
-				</ul>
-            </nav>
-            <!-- end navbar-->
-        </div>
-        <!-- Top Bar End -->
-        <!-- Top Bar End -->
+                    </div>
 
-        <div class="page-wrapper">
-
-            <!-- Page Content-->
-            <div class="page-content-tab">
-				<div class="container-fluid">
-					<!-- end page title end breadcrumb -->
-					<div class="row">
-						<div class="col-12">
-							<div class="card">
-								<div class="card-header">
-									<h4 class="card-title">Candidatos </h4>
-								</div><!--end card-header-->
-								<div class="row"> 
-									<div class="col-lg-8">
-										<div class="card">
-											<div class="card-header">
-												<h4 class="card-title">Filtros</h4>
-												<p class="text-muted mb-0">Busca entre rango de fechas
-												</p>
-											</div><!--end card-header-->
-											<form method="POST" action="candidatos.php?filtro=true">
-												<div class="card-body">
-													<div class="row">
-														<div class="col-md-7">
-															<label class="mb-3">Selecciona un rango de fechas</label>
-															<div class="input-group" id="DateRange">
-																<input type="date" class="form-control" name="date1" placeholder="Inicial" aria-label="FechaInicial">
-																<span class="input-group-text"> a </span>
-																<input type="date" class="form-control" name="date2" placeholder="Final" aria-label="FechaFinal">
-															</div> 
-														</div><!-- end col -->
-														<div class="col-md-4">
-															<label class="mb-3">Selecciona un cliente</label>
-															<select class="input-group" id="multiSelect" name="codsel[]">
-															<?php while ($filac=mysqli_fetch_array($query_clientes)) { ?>
-																<option value="<?php echo $filac['codigo']; ?>"><?php echo $filac['codigo']." - ".$filac['cliente']." - ".$filac['perfil']; ?></option>
-																<?php } ?>
-															</select>          												
-														</div><!-- end row -->														
-													</div><!-- end row -->
-													<br>
-													<button class="btn btn-primary" type="submit">Filtrar </button>
-												</div><!-- end card-body -->
-											</form>
-										</div> <!-- end card -->                               
-									</div> <!-- end col -->  
-									
-									<div class="col-lg-4">
-										<div class="card">
-											<div class="card-header">
-												<h4 class="card-title">Filtros</h4>
-												<p class="text-muted mb-0">Busca por CURP
-												</p>
-											</div><!--end card-header-->
-											<form method="POST" action="buscarcurp.php">
-												<div class="card-body">
-													<div class="row">
-														<div class="col-md-10">
-															<label class="mb-3">Ingresa la CURP que quieras buscar</label>
-															<div class="col-sm-10">
-																<input class="form-control" type="text" name="bcurp" id="bcurp">
-															</div>
-														</div><!-- end col --> 												
-													</div><!-- end row --> 
-													<br>
-													<button class="btn btn-primary" type="submit">Filtrar </button>
-												</div><!-- end card-body -->
-											</form>
-										</div> <!-- end card -->                               
-									</div> <!-- end col --> 
-								</div>
-								<div class="card-body">
-									<div class="table-responsive">
-										<table class="table" id="datatable_1">
-											<thead class="thead-light">
-											  <tr>
-												<th>
-													Nombre
-												</th>
-												<th>
-													Telefono
-												</th>
-												<th>
-													CURP
-												</th>
-												<th>
-													Fecha Alta
-												</th>
-												<th>
-													Cliente
-												</th>
-												<th>
-													Perfil
-												</th>
-												<th>
-													Ver
-												</th>
-											  </tr>
-											</thead>
-											<tbody>
-												<?php while ($fila=mysqli_fetch_array($query_usuarios)) {
-													if($fila['estatus'] == "Activo" || $fila['estatus'] == null || $fila['estatus'] == ""){
-													
-													$nombre= quitar_acentos($fila['nombre']);
-													$app= quitar_acentos($fila['app']);
-													$apm= quitar_acentos($fila['apm']);
-													$query_cliper = mysqli_query($con, "SELECT cliente, perfil FROM codigos_clientes WHERE codigo ='".substr($fila['clave_ejecutivo'], 0, 3)."';");
-													$filaqp=mysqli_fetch_array($query_cliper);
-												?>
-												<tr>
-													<td><?php  echo strtoupper($nombre." ".$app." ".$apm); ?></td>
-													<td><?php  echo $fila ["telefono"]; ?></td>
-													<td><?php  echo $fila ["curp"]; ?></td>
-													<td><?php  echo $fila ["fechaAlta"]; ?></td>
-													<td><?php  echo $filaqp ["cliente"]; ?></td>
-													<td><?php  echo $filaqp ["perfil"]; ?></td>
-													<td>
-														<!-- <a class="btn btn-success" style="font-size: 10px;" href="perfil.php?id=<?php echo $fila ['id'];?>&curp=<?php echo $fila ['curp'];?>">Ver perfil</a> -->
-														<a href="perfil.php?id=<?php echo $fila ['id'];?>&curp=<?php echo $fila ['curp'];?>&vista=candidatos"><i class="las la-pen text-secondary font-16"></i></a>
-													</td>
-												</tr> 
-												<?php  
-													}
-												}
-												?>
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div> <!-- end col -->
-					</div> <!-- end row -->
-				</div>
-                 
-                <!--Start Footer-->
-                <!-- Footer Start -->
-                <footer class="footer text-center text-sm-start">
-                    <span class="text-muted d-none d-sm-inline-block float-end">
-					&copy; <script>
-                        document.write(new Date().getFullYear())
-                    </script> Grupo Mctree
-					</span>
-                </footer>
-                <!-- end Footer -->                
-                <!--end footer-->
+                    <!-- Pie de página -->
+                    <footer class="footer text-center text-sm-start">
+                        &copy; <script>
+                            document.write(new Date().getFullYear())
+                        </script> Grupo Mctree
+                    </footer>
+                </div>
             </div>
-            <!-- end page content -->
-        </div>
-        <!-- end page-wrapper -->
 
-        <!-- Javascript  -->  
-        <!-- vendor js -->
-        
-        <script src="<?php echo $views;?>../assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="<?php echo $views;?>../assets/libs/simplebar/simplebar.min.js"></script>
-        <script src="<?php echo $views;?>../assets/libs/feather-icons/feather.min.js"></script>
-		
-		<script src="<?php echo $views;?>../assets/libs/simple-datatables/umd/simple-datatables.js"></script>
-		<script src="<?php echo $views;?>../assets/libs/vanillajs-datepicker/js/datepicker-full.min.js"></script>
-		
-		<script src="<?php echo $views;?>../assets/js/pages/datatable.init.js"></script>
-        <!-- App js -->
-        <script src="<?php echo $views;?>../assets/js/app.js"></script>
-		
-		<script src="<?php echo $views;?>../assets/libs/mobius1-selectr/selectr.min.js"></script>
-		<!-- <script src="<?php echo $views;?>../assets/js/pages/forms-advanced.js"></script> -->
-		<script>
-			new Selectr("#multiSelect",{multiple:!0});
-		</script>
+            <!-- Scripts JavaScript -->
+            <script src="<?php echo $views;?>../assets/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+            <script src="<?php echo $views;?>../assets/libs/simplebar/simplebar.min.js"></script>
+            <script src="<?php echo $views;?>../assets/libs/feather-icons/feather.min.js"></script>
+            <script src="<?php echo $views;?>../assets/libs/simple-datatables/umd/simple-datatables.js"></script>
+            <script src="<?php echo $views;?>../assets/libs/vanillajs-datepicker/js/datepicker-full.min.js"></script>
+            <script src="<?php echo $views;?>../assets/js/pages/datatable.init.js"></script>
+            <script src="<?php echo $views;?>../assets/js/app.js"></script>
+            <script src="<?php echo $views;?>../assets/libs/mobius1-selectr/selectr.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    </body>
-    <!--end body-->
-</html>
-<?php
-}else {
+            <script>
+            $(document).ready(function() {
+                new Selectr("#multiSelect", { multiple: true });
+
+                loadCandidatos();
+
+                function loadCandidatos(filtros = {}) {
+                    displaySkeletonLoader();
+
+                    $.ajax({
+                        url: 'get_candidatos.php',
+                        method: 'POST',
+                        data: filtros,
+                        dataType: 'json',
+                        success: function(data) {
+                            displayCandidatos(data);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error al cargar candidatos:", error);
+                            $('#candidatos-container').html('<p class="text-danger">Error al cargar los datos. Por favor, intente de nuevo.</p>');
+                        }
+                    });
+                }
+
+                function displaySkeletonLoader() {
+                    var html = '<table class="table" id="datatable_1">';
+                    html += '<thead class="thead-light">';
+                    html += '<tr><th>Nombre</th><th>Teléfono</th><th>CURP</th><th>Fecha Alta</th><th>Cliente</th><th>Perfil</th><th>Ver</th></tr>';
+                    html += '</thead><tbody>';
+
+                    for (var i = 0; i < 10; i++) {
+                        html += '<tr>';
+                        for (var j = 0; j < 7; j++) {
+                            html += '<td><div class="skeleton-loader skeleton-row"></div></td>';
+                        }
+                        html += '</tr>';
+                    }
+
+                    html += '</tbody></table>';
+                    $('#candidatos-container').html(html);
+                }
+
+                function displayCandidatos(candidatos) {
+                    var html = '<table class="table" id="datatable_1">';
+                    html += '<thead class="thead-light">';
+                    html += '<tr><th>Nombre</th><th>Teléfono</th><th>CURP</th><th>Cliente</th><th>Proyecto</th><th>Perfil</th><th>Acciones</th></tr>';
+                    html += '</thead><tbody>';
+
+                    if (candidatos.length === 0) {
+                        html += '<tr><td colspan="7" class="text-center">No se encontraron candidatos</td></tr>';
+                    } else {
+                        candidatos.forEach(function(candidato) {
+                            html += '<tr>';
+                            html += '<td>' + candidato.nombre + '</td>';
+                            html += '<td>' + candidato.telefono + ' <a href="https://wa.me/' + formatPhoneNumber(candidato.telefono) + '" target="_blank"><i class="fab fa-whatsapp text-success" style="font-size: 1.2em;"></i></a></td>';
+                            html += '<td>' + candidato.curp + '</td>';
+                            html += '<td>' + candidato.cliente + '</td>';
+                            html += '<td>' + candidato.proyecto + '</td>';
+                            html += '<td>' + candidato.perfil + '</td>';
+                            html += '<td><a href="perfil.php?id=' + candidato.id + '&curp=' + candidato.curp + '&vista=candidatos"><i class="las la-pen text-secondary font-16"></i></a></td>';
+                            html += '</tr>';
+                        });
+                    }
+
+                    html += '</tbody></table>';
+                    $('#candidatos-container').html(html);
+
+                    // Inicializar o actualizar el DataTable
+                    if (window.dataTable) {
+                        dataTable.destroy();
+                    }
+                    window.dataTable = new simpleDatatables.DataTable("#datatable_1");
+                }
+
+                function formatPhoneNumber(phoneNumber) {
+                    var cleaned = ('' + phoneNumber).replace(/\D/g, '');
+
+                    if (cleaned.length === 10) {
+                        cleaned = '52' + cleaned;
+                    } else if (cleaned.length === 11 && cleaned[0] === '1') {
+                        cleaned = '52' + cleaned.slice(1);
+                    }
+
+                    return cleaned;
+                }
+
+                $('#filtro-form').on('submit', function(e) {
+                    e.preventDefault();
+                    var filtros = $(this).serialize();
+                    loadCandidatos(filtros);
+                });
+            });
+            </script>
+        </body>
+    </html>
+    <?php
+} else {
     header("Location: ../../login.php");
 }
 ?>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Trabajo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 200px;
+            margin-top: 50px;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        .bold-variable {
+            font-weight: bold;
+            color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CONTRATO INDIVIDUAL DE TRABAJO POR TIEMPO DETERMINADO</h1>
+        
+        <p>Contrato individual de trabajo que celebran por una parte la empresa <span class="bold-variable">{{ nombre_empresa }}</span>, representada en este acto por el <span class="bold-variable">{{ representante_legal }}</span> a quien en lo sucesivo se le denominará "LA EMPRESA" y por la otra <span class="bold-variable">{{ nombre }}</span> a quien en adelante se le denominará "EL (LA) TRABAJADOR (A)", de conformidad con las siguientes:</p>
+
+        <h2>DECLARACIONES</h2>
+
+        <h3>I.- DE LA EMPRESA:</h3>
+        <p>1.- Ser una sociedad mercantil constituida conforme a las leyes mexicanas.</p>
+        <p>2.- Tener su domicilio en <span class="bold-variable">{{ direccion_empresa }}</span>.</p>
+        <p>3.- Tener como objeto social <span class="bold-variable">{{ objeto_social }}</span>.</p>
+
+        <h3>II.- EL (LA) TRABAJADOR (A) MANIFIESTA:</h3>
+        <p>1.- Llamarse como ha quedado escrito, ser de nacionalidad <span class="bold-variable">{{ nacionalidad }}</span>, de <span class="bold-variable">{{ edad }}</span> años de edad, estado civil <span class="bold-variable">{{ estado_civil }}</span>, con Registro Federal de Contribuyentes <span class="bold-variable">{{ rfc }}</span>, con Clave Única de Registro de Población <span class="bold-variable">{{ curp }}</span> y con domicilio en <span class="bold-variable">{{ direccion_trabajador }}</span>.</p>
+        <p>2.- Tener la capacidad física y mental para desempeñar el trabajo para el cual se le contrata.</p>
+
+        <div class="page-break"></div>
+
+        <h2>CLÁUSULAS</h2>
+
+        <h3>PRIMERA.</h3>
+        <p>"LA EMPRESA" contrata los servicios de "EL (LA) TRABAJADOR (A)", quien se obliga a prestarlos personalmente como <span class="bold-variable">{{ puesto_trabajo }}</span>, bajo la dirección y dependencia de la primera, conviniendo en seguir y cumplir con las indicaciones e instrucciones que reciba de sus superiores, así como aquellas actividades anexas o conexas con la principal.</p>
+
+        <h3>SEGUNDA.</h3>
+        <p>La duración de este contrato será por tiempo determinado y tendrá vigencia del <span class="bold-variable">{{ fecha_inicio }}</span> al <span class="bold-variable">{{ fecha_fin }}</span>.</p>
+
+        <h3>TERCERA.</h3>
+        <p>La jornada de trabajo será de <span class="bold-variable">{{ horas_jornada }}</span> horas semanales, distribuidas de lunes a viernes de <span class="bold-variable">{{ horario_trabajo }}</span>.</p>
+
+        <h3>CUARTA.</h3>
+        <p>"EL (LA) TRABAJADOR (A)" percibirá como salario la cantidad de <span class="bold-variable">{{ salario }}</span> mensuales, pagaderos los días <span class="bold-variable">{{ dias_pago }}</span> de cada mes.</p>
+
+        <!-- Continuar con el resto de las cláusulas -->
+
+        <div class="page-break"></div>
+
+        <!-- Sección de firmas -->
+        <div class="signature">
+            <div class="signature-line"></div>
+            <p>"LA EMPRESA"<br><span class="bold-variable">{{ representante_legal }}</span></p>
+        </div>
+
+        <div class="signature">
+            <div class="signature-line"></div>
+            <p>"EL (LA) TRABAJADOR (A)"<br><span class="bold-variable">{{ nombre }}</span></p>
+        </div>
+    </div>
+</body>
+</html>

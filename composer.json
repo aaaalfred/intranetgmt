@@ -1,0 +1,12 @@
+{
+    "require": {
+        "dompdf/dompdf": "^3.0",
+        "twig/twig": "^3.14",
+        "predis/predis": "^2.2",
+        "php-amqplib/php-amqplib": "^3.7",
+        "aws/aws-sdk-php": "^3.322"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.3"
+    }
+}

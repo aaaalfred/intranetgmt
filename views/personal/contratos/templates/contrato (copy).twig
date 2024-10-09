@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Contrato Laboral</title>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #ffffff;
+        }
+        .header { 
+            text-align: center; 
+            padding: 30px 0; 
+            background-color: #4CAF50; 
+            color: white; 
+        }
+        .content { 
+            margin: 40px; 
+            line-height: 1.6; 
+        }
+        .footer { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            text-align: center; 
+            font-size: 12px; 
+            color: #888; 
+            padding: 10px 0; 
+            border-top: 1px solid #ddd;
+        }
+        .section { 
+            margin-bottom: 20px; 
+        }
+        .bold { 
+            font-weight: bold; 
+        }
+        .signature {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature div {
+            width: 45%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Contrato de Trabajo</h1>
+    </div>
+    <div class="content">
+        <div class="section">
+            <p>Este contrato se celebra entre <span class="bold">{{ nombre }}</span> y la empresa XYZ.</p>
+        </div>
+        <div class="section">
+            <p>Datos del empleado:</p>
+            <ul>
+                <li>Nombre: <span class="bold">{{ nombre }}</span></li>
+                <li>CURP: <span class="bold">{{ curp }}</span></li>
+                <li>NSS: <span class="bold">{{ nss }}</span></li>
+            </ul>
+        </div>
+        <!-- Aquí puedes agregar más secciones del contrato según sea necesario -->
+        <div class="signature">
+            <div>
+                <p>______________________________</p>
+                <p>Firma del Empleado</p>
+            </div>
+            <div>
+                <p>______________________________</p>
+                <p>Firma del Representante de XYZ</p>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <p>© {{ "now"|date("Y") }} Empresa XYZ. Todos los derechos reservados.</p>
+    </div>
+</body>
+</html>

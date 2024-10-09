@@ -1,18 +1,34 @@
 <?php 
-	
-	include('../../actions/conexion.php');
-	$variables = "";
-	for($i = 0 ; $i < count($_POST['claves']) ; $i++){
-		if($i ==0){
-			$variables = $variables . $_POST['claves'][$i]."";
-		}else{
-			$variables = $variables . "," . $_POST['claves'][$i];
+session_start();
+include('../../actions/conexion.php');
 
-		}
-	}
-	//var_dump("INSERT INTO credenciales (id, nombre, rol, clave, usuario, password, correo, ejecutivo, tipo) VALUES (0, '".$_POST['nombre']."', 'EJECUTIVO', ('".$variables."'), '".$_POST['usuario']."', '".$_POST['password']."', '".$_POST['correo']."', NULL, '".$_POST['rol']."');");exit;
-	mysqli_query($con, "INSERT INTO credenciales (id, nombre, rol, clave, usuario, password, correo, ejecutivo, tipo) VALUES (0, '".$_POST['nombre']."', 'EJECUTIVO', ('".$variables."'), '".$_POST['usuario']."', '".$_POST['password']."', '".$_POST['correo']."', NULL, '".$_POST['rol']."');");
+if (!isset($_POST['claves']) || empty($_POST['claves'])) {
+    echo "Error: Debe seleccionar al menos una clave.";
+    exit;
+}
 
-	header("Location: ejecutivos.php");
+$variables = implode(",", $_POST['claves']);
 
+$sql = "INSERT INTO credenciales (id, nombre, rol, clave, usuario, password, correo, ejecutivo, tipo) 
+        VALUES (0, ?, 'EJECUTIVO', ?, ?, ?, ?, ?, ?)";
+
+$stmt = $con->prepare($sql);
+$stmt->bind_param("sssssss", 
+    $_POST['nombre'],
+    $variables,
+    $_POST['usuario'],
+    $_POST['password'],
+    $_POST['correo'],
+    $_SESSION['id_gmt'],
+    $_POST['rol']
+);
+
+if($stmt->execute()){
+    header("Location: ejecutivos.php");
+} else {
+    echo "Error al insertar: " . $stmt->error;
+}
+
+$stmt->close();
+$con->close();
 ?>
